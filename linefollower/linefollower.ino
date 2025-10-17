@@ -13,8 +13,9 @@ int irPin2 = A1; // left
 int colorValueRight = 0;
 int colorValueLeft = 0;
 int baseSpeed = 22;
-int threshold = 400;
+int threshold = 300;
 int diff = 4;
+int direction = 0;
 
 char receivedChar;
 boolean newData = false;
@@ -31,35 +32,54 @@ void loop() {
   if (on) {
     colorValueRight = analogRead(irPin);
     colorValueLeft = analogRead(irPin2);
-    Serial.print("sensor1: ");
+    Serial.print("sensor right: ");
     Serial.print(colorValueRight);
-    Serial.print(", sensor2: ");
+    Serial.print(", sensor left: ");
     Serial.println(colorValueLeft);
     int rightUnder = colorValueRight < threshold;
     int leftUnder = colorValueLeft < threshold;
-    
-    if ((rightUnder && leftUnder) || (!rightUnder && !leftUnder)) {
-      Serial.println("straight");
-      motorLeft->setSpeed(baseSpeed);
-      motorRight->setSpeed(baseSpeed + diff);
-    } else if (rightUnder) {
-      Serial.println("turn right");
-      motorLeft->setSpeed(baseSpeed + 15);
-      motorRight->setSpeed(baseSpeed);
-      // motorLeft->run(FORWARD);
-      // delay(200);
+    if (rightUnder) {
+      direction = 0;
     } else if (leftUnder) {
+      direction = 1;
+    }
+    // right = 0, left = 1
+    //
+    if (direction == 0) {
+      Serial.println("turn right");
+      motorLeft->setSpeed(baseSpeed + 5);
+      motorRight->setSpeed(baseSpeed);
+    } else if (direction == 1) {
       Serial.println("turn left");
       motorLeft->setSpeed(baseSpeed);
-      motorRight->setSpeed(baseSpeed + diff + 15);
-      // motorLeft->run(FORWARD);
-      // delay(200);
-    } else {
-      Serial.println("straight");
-      motorLeft->setSpeed(baseSpeed);
-      motorRight->setSpeed(baseSpeed + diff);
+      motorRight->setSpeed(baseSpeed + diff + 10);
     }
+
     
+    // if ((rightUnder && leftUnder) || (!rightUnder && !leftUnder)) {
+    //   Serial.println("straight");
+    //   motorLeft->setSpeed(baseSpeed);
+    //   motorRight->setSpeed(baseSpeed + diff);
+    // } else if (rightUnder) {
+    //   Serial.println("turn right");
+    //   motorLeft->setSpeed(baseSpeed + 15);
+    //   motorRight->setSpeed(baseSpeed);
+    //   // motorLeft->run(FORWARD);
+    //   // delay(200);
+    // } else if (leftUnder) {
+    //   Serial.println("turn left");
+    //   motorLeft->setSpeed(baseSpeed);
+    //   motorRight->setSpeed(baseSpeed + diff + 15);
+    //   // motorLeft->run(FORWARD);
+    //   // delay(200);
+    // } else {
+    //   Serial.println("straight");
+    //   motorLeft->setSpeed(baseSpeed);
+    //   motorRight->setSpeed(baseSpeed + diff);
+    // }
+    
+    // motorLeft->run(RELEASE);
+    // motorRight->run(RELEASE);
     motorLeft->run(FORWARD);
     motorRight->run(FORWARD);
   } else {
