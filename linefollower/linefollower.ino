@@ -10,11 +10,16 @@ Adafruit_DCMotor *motorRight = AFMS.getMotor(2); // 21 minimum
 
 int irPin = A0; // right
 int irPin2 = A1; // left
+int digitalIrRight = 12;
+int digitalIrLeft = 13;
 int colorValueRight = 0;
 int colorValueLeft = 0;
 int baseSpeed = 22;
-int threshold = 400;
+int threshold = 600;
 int diff = 4;
+int turning = 0;
+int a,b,c;
+int adjustment = 20;
 
 char receivedChar;
 boolean newData = false;
@@ -23,45 +28,59 @@ boolean on = false;
 void setup() { 
   AFMS.begin();
   Serial.begin(9600);
+  pinMode(digitalIrRight, OUTPUT);
+  pinMode(digitalIrLeft, OUTPUT);
 }
 
 void loop() {
   recvOneChar();
   showNewData();
   if (on) {
-    colorValueRight = analogRead(irPin);
-    colorValueLeft = analogRead(irPin2);
-    Serial.print("sensor1: ");
+    colorValueRight = readPin(irPin, digitalIrRight);
+    colorValueLeft = readPin(irPin2, digitalIrLeft);
+    Serial.print("sensor right: ");
     Serial.print(colorValueRight);
-    Serial.print(", sensor2: ");
+    Serial.print(", sensor left: ");
     Serial.println(colorValueLeft);
-    int rightUnder = colorValueRight < threshold;
-    int leftUnder = colorValueLeft < threshold;
+    int rightUnder = colorValueRight > threshold;
+    int leftUnder = colorValueLeft > threshold;
     
-    if ((rightUnder && leftUnder) || (!rightUnder && !leftUnder)) {
+    if (!rightUnder && !leftUnder) {
       Serial.println("straight");
       motorLeft->setSpeed(baseSpeed);
       motorRight->setSpeed(baseSpeed + diff);
+      turning = 0;
     } else if (rightUnder) {
       Serial.println("turn right");
-      motorLeft->setSpeed(baseSpeed + 15);
+      motorLeft->setSpeed(baseSpeed + adjustment);
       motorRight->setSpeed(baseSpeed);
+      turning = 1;
       // motorLeft->run(FORWARD);
-      // delay(200);
+      // delay(400);
     } else if (leftUnder) {
       Serial.println("turn left");
       motorLeft->setSpeed(baseSpeed);
-      motorRight->setSpeed(baseSpeed + diff + 15);
+      motorRight->setSpeed(baseSpeed + diff + adjustment);
+      turning = 2;
       // motorLeft->run(FORWARD);
       // delay(200);
-    } else {
-      Serial.println("straight");
-      motorLeft->setSpeed(baseSpeed);
-      motorRight->setSpeed(baseSpeed + diff);
+    } else if (rightUnder && leftUnder) {
+      if (turning == 1) {
+        Serial.println("turn right");
+        motorLeft->setSpeed(baseSpeed + adjustment);
+        motorRight->setSpeed(baseSpeed);
+      }
+      if (turning == 2) {
+        Serial.println("turn left");
+        motorLeft->setSpeed(baseSpeed);
+        motorRight->setSpeed(baseSpeed + diff + adjustment);
+      }
     }
     
     motorLeft->run(FORWARD);
     motorRight->run(FORWARD);
+    // motorLeft->run(RELEASE);
+    // motorRight->run(RELEASE);
   } else {
     motorLeft->run(RELEASE);
     motorRight->run(RELEASE);
@@ -88,3 +107,15 @@ void showNewData() {
       newData = false;
     }
 }
+
+int readPin(int irPin, int digitalPin) {
+    digitalWrite(digitalPin,HIGH);
+    delayMicroseconds(500);
+    a=analogRead(irPin);
+    digitalWrite(digitalPin,LOW);
+    delayMicroseconds(500);
+    b=analogRead(irPin);
+    c=b-a;
+    return c;
+}
+
