@@ -3,7 +3,7 @@
 #include "utility/Adafruit_MS_PWMServoDriver.h"
 
 Adafruit_MotorShield AFMS = Adafruit_MotorShield();
-Adafruit_DCMotor *myMotor = AFMS.getMotor(2);
+Adafruit_DCMotor *myMotor = AFMS.getMotor(4);
 Adafruit_DCMotor *myMotor2 = AFMS.getMotor(3);
 
 int test = 17;
