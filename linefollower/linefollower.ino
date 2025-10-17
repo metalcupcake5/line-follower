@@ -5,8 +5,8 @@
 Adafruit_MotorShield AFMS = Adafruit_MotorShield();
 
 // motor greater runs 4 points higher than 3
-Adafruit_DCMotor *motorLeft = AFMS.getMotor(3); // 25 minimum
-Adafruit_DCMotor *motorRight = AFMS.getMotor(2); // 21 minimum
+Adafruit_DCMotor *motorLeft = AFMS.getMotor(3); // 19 minimum
+Adafruit_DCMotor *motorRight = AFMS.getMotor(4); // 27 minimum
 
 int irPin = A0; // right
 int irPin2 = A1; // left
@@ -16,8 +16,8 @@ int colorValueRight = 0;
 int colorValueLeft = 0;
 int baseSpeed = 22;
 int threshold = 600;
-int diff = 4;
-int turning = 0;
+int diff = 8;
+int direction = 1;
 int a,b,c;
 int adjustment = 20;
 
@@ -45,38 +45,33 @@ void loop() {
     int rightUnder = colorValueRight > threshold;
     int leftUnder = colorValueLeft > threshold;
     
-    if (!rightUnder && !leftUnder) {
-      Serial.println("straight");
-      motorLeft->setSpeed(baseSpeed);
-      motorRight->setSpeed(baseSpeed + diff);
-      turning = 0;
-    } else if (rightUnder) {
-      Serial.println("turn right");
-      motorLeft->setSpeed(baseSpeed + adjustment);
-      motorRight->setSpeed(baseSpeed);
-      turning = 1;
-      // motorLeft->run(FORWARD);
-      // delay(400);
-    } else if (leftUnder) {
+    if (leftUnder) {
       Serial.println("turn left");
-      motorLeft->setSpeed(baseSpeed);
+      motorLeft->setSpeed(baseSpeed - adjustment);
       motorRight->setSpeed(baseSpeed + diff + adjustment);
-      turning = 2;
+      direction = 2;
       // motorLeft->run(FORWARD);
       // delay(200);
-    } else if (rightUnder && leftUnder) {
-      if (turning == 1) {
+    } else if (rightUnder) {
+      Serial.println("turn right");
+      motorLeft->setSpeed(baseSpeed + adjustment + 20);
+      motorRight->setSpeed(baseSpeed - adjustment);
+      direction = 1;
+      // motorLeft->run(FORWARD);
+      // delay(400);
+    } else {
+      if (direction == 1) {
         Serial.println("turn right");
         motorLeft->setSpeed(baseSpeed + adjustment);
-        motorRight->setSpeed(baseSpeed);
+        motorRight->setSpeed(baseSpeed - adjustment);
       }
-      if (turning == 2) {
+      if (direction == 2) {
         Serial.println("turn left");
-        motorLeft->setSpeed(baseSpeed);
+        motorLeft->setSpeed(baseSpeed - adjustment);
         motorRight->setSpeed(baseSpeed + diff + adjustment);
       }
     }
-    
+
     motorLeft->run(FORWARD);
     motorRight->run(FORWARD);
     // motorLeft->run(RELEASE);
