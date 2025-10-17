@@ -1,0 +1,40 @@
+#include <Wire.h>
+#include <Adafruit_MotorShield.h>
+#include "utility/Adafruit_MS_PWMServoDriver.h"
+
+Adafruit_MotorShield AFMS = Adafruit_MotorShield();
+
+// motor greater runs 10 points higher than 3
+Adafruit_DCMotor *motorGreater = AFMS.getMotor(2); // 28 minimum
+Adafruit_DCMotor *motorLess = AFMS.getMotor(3); // 18 minimum
+
+int irPin = A0;
+int irPin2 = A1;
+int colorValue = 0;
+int colorValue2 = 0;
+int baseSpeed = 50;
+
+void setup() { 
+  AFMS.begin();
+  Serial.begin(9600);
+}
+
+
+
+void loop() {
+  colorValue = analogRead(irPin);
+  colorValue2 = analogRead(irPin2);
+  if (colorValue > 300) {
+    motorGreater->setSpeed(baseSpeed);
+    motorLess->setSpeed(baseSpeed);
+  } else if (colorValue2 > 300) {
+    motorGreater->setSpeed(baseSpeed + 10);
+    motorLess->setSpeed(baseSpeed);
+
+  } else {
+    motorGreater->setSpeed(baseSpeed);
+    motorLess->setSpeed(baseSpeed - 10);
+  }
+  motorGreater->run(FORWARD);
+  motorLess->run(BACKWARD);
+}
